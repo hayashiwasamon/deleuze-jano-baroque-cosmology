@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ドゥルーズ、ジャノ、バロック宇宙論： 「襞」の宇宙の探求</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* メイン論文記事のスタイル (コード①) */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F9FA; /* メイン背景 */
+            color: #212529; /* メインテキスト */
+        }
+        .header-bg { background-color: #0A2463; } /* 論文ヘッダー背景 */
+        .card-bg { background-color: #ffffff; } /* 論文カード背景 */
+        .text-main { color: #0A2463; } /* 論文主要テキスト色 */
+        .text-accent { color: #3E92CC; } /* 論文アクセント色 */
+        .border-accent { border-color: #3E92CC; }
+        .bg-accent-light { background-color: #A6D8F0; }
+        .bg-accent-medium { background-color: #3E92CC; }
+        .bg-accent-dark { background-color: #0A2463; }
+        .text-highlight { color: #64C3BF; }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px; /* Default height for mobile */
+            max-height: 400px; /* Max height */
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .chart-container {
+                height: 350px; /* Larger height for desktop */
+            }
+        }
+        .fold-diagram {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+            padding: 20px;
+        }
+        .fold {
+            width: 100px;
+            height: 100px;
+            background-color: #A6D8F0;
+            border: 2px solid #3E92CC;
+            margin: -10px;
+            transform: skewX(-15deg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #0A2463;
+            box-shadow: 5px 5px 10px rgba(0,0,0,0.1);
+        }
+        .fold:nth-child(2) {
+            background-color: #64C3BF;
+            transform: skewX(15deg) translateX(-20px) translateY(10px);
+            z-index: 1;
+        }
+        .fold:nth-child(3) {
+            background-color: #3E92CC;
+            transform: skewX(-10deg) translateX(10px) translateY(-15px);
+        }
+        .flowchart-node {
+            background-color: #A6D8F0;
+            border: 2px solid #3E92CC;
+            color: #0A2463;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .flowchart-arrow {
+            font-size: 2rem;
+            color: #3E92CC;
+            margin: 0 0.5rem;
+            line-height: 1;
+        }
+        .relationship-node {
+            background-color: #ffffff;
+            border: 2px solid #0A2463;
+            color: #0A2463;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            min-width: 120px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .relationship-connector {
+            height: 2px;
+            background-color: #3E92CC;
+            flex-grow: 1;
+            margin: 0 4px;
+        }
+        .big-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #0A2463;
+            line-height: 1.2;
+        }
+        @media (min-width: 768px) {
+            .big-number {
+                font-size: 4.5rem;
+            }
+        }
+        .sticky-nav {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white for blur effect */
+            backdrop-filter: blur(10px); /* Background blur for modern look */
+        }
+
+        /* インフォグラフ要素のスタイル (コード②由来) */
+        .ig-accordion-content { /* ig- プレフィックスで衝突回避 */
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .ig-modal { /* ig- プレフィックス */
+            display: none;
+            position: fixed;
+            z-index: 100; /* メインナビより手前 */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6); /* 少し濃いめの背景 */
+        }
+        .ig-modal-content { /* ig- プレフィックス */
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 24px; /* Tailwind p-6 */
+            border: 1px solid #888;
+            width: 90%; /* モバイルでの幅を調整 */
+            max-width: 700px;
+            border-radius: 0.5rem; /* Tailwind rounded-lg */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .ig-concept-card { /* ig- プレフィックス */
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .ig-concept-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .ig-close-button { /* ig- プレフィックス */
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        .ig-close-button:hover {
+            color: #dc2626; /* Tailwind red-600 for hover */
+        }
+
+        /* クイズのスタイル (コード③由来) */
+        .quiz-section-bg { /* クイズセクションの背景 */
+             background-color: #1e293b; /* slate-800 from quiz */
+             color: #e2e8f0; /* slate-200 for text */
+        }
+        .quiz-container { /* クイズコンテナのスタイルを適用 */
+            background-color: #0f172a; /* slate-900 from quiz body, adjusted */
+            color: #e2e8f0; /* slate-200 for text */
+            padding: 1.5rem; /* p-6 */
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); /* shadow-2xl */
+            width: 100%;
+            max-width: 48rem; /* max-w-2xl */
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .quiz-rationale-correct {
+            color: #16a34a; /* Tailwind green-600 */
+            font-weight: bold;
+        }
+        .quiz-rationale-incorrect {
+            color: #dc2626; /* Tailwind red-600 */
+        }
+        .quiz-answer-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .quiz-answer-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .quiz-selected-correct {
+            background-color: #dcfce7 !important; /* Tailwind green-100 */
+            border-color: #16a34a !important; /* Tailwind green-600 */
+            color: #15803d !important; /* Tailwind green-700 for text */
+        }
+        .quiz-selected-incorrect {
+            background-color: #fee2e2 !important; /* Tailwind red-100 */
+            border-color: #dc2626 !important; /* Tailwind red-600 */
+            color: #b91c1c !important; /* Tailwind red-700 for text */
+        }
+        .quiz-button-base { /* クイズボタンの共通スタイル */
+             font-semibold py-2 px-4 rounded-lg transition-all duration-200 ease-in-out shadow-md text-white;
+        }
+
+    </style>
+</head>
+<body class="antialiased">
+    <!-- 
+        Chosen Palette (Main Article): Brilliant Blues (#0A2463, #3E92CC, #A6D8F0, #64C3BF, Background: #F8F9FA, Text: #212529)
+        Infographics elements are styled to complement this, using primarily neutral tones with amber for highlights if needed, but mostly integrated into the main theme.
+        Quiz has its own dark theme.
+    -->
+
+    <header class="header-bg text-white p-6 shadow-lg">
+        <div class="container mx-auto text-center">
+            <h1 class="text-3xl md:text-4xl font-bold">ドゥルーズ、ジャノ、バロック宇宙論</h1>
+            <p class="text-xl md:text-2xl mt-2">「襞」の宇宙の探求</p>
+        </div>
+    </header>
+
+    <nav class="sticky-nav shadow-md mb-8">
+        <div class="container mx-auto px-4">
+            <ul class="flex flex-wrap justify-center space-x-2 sm:space-x-4 py-3 text-sm md:text-base">
+                <li><a href="#section1" class="text-main hover:text-accent font-medium p-2 rounded-md">序論</a></li>
+                <li><a href="#section2" class="text-main hover:text-accent font-medium p-2 rounded-md">ジャノの実践</a></li>
+                <li><a href="#section3" class="text-main hover:text-accent font-medium p-2 rounded-md">ヒルベルトの幾何学</a></li>
+                <li><a href="#section4" class="text-main hover:text-accent font-medium p-2 rounded-md">再構成</a></li>
+                <li><a href="#section5" class="text-main hover:text-accent font-medium p-2 rounded-md">結論</a></li>
+                <li><a href="#quiz-section" class="text-main hover:text-accent font-medium p-2 rounded-md">理解度クイズ</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container mx-auto p-4 md:p-8">
+        <section id="section1" class="mb-12 scroll-mt-20">
+            <div class="card-bg rounded-lg shadow-xl p-6 md:p-8">
+                <h2 class="text-2xl md:text-3xl font-bold text-main mb-6 text-center">1. 序論：ドゥルーズの「襞」とジャノのレンズ</h2>
+                <p class="text-gray-700 leading-relaxed mb-6 text-base md:text-lg">
+                    ジル・ドゥルーズは、バロックを単なる美術様式ではなく、無限を有限のうちに包み込み、内と外を複雑に折り重ねる「襞」（le pli）という根本的な思考様式として捉えました。物質も魂もこの「襞」を通じて世界と関わります。ジョルジオ・ジャノのパノラマ写真は、ピエモンテのバロック建築、特に教会の天井に見られるイリュージョニスティックな無限性を捉え、このドゥルーズ的な「襞」に満ちた宇宙を二次元平面に翻訳しようとする試みと言えます。
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center mb-8">
+                    <div class="text-center">
+                        <h3 class="text-xl font-semibold text-accent mb-3">「襞」の概念図</h3>
+                        <div class="fold-diagram card-bg border border-gray-200 rounded-lg p-4">
+                            <div class="fold p-2"><span>内と外</span></div>
+                            <div class="fold p-2"><span>有限と無限</span></div>
+                            <div class="fold p-2"><span>運動と変容</span></div>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-3">「襞」は、対立する概念を折り重ね、絶え間ないダイナミズムを生み出します。</p>
+                    </div>
+                    <div class="text-center p-6 bg-accent-light rounded-lg">
+                        <h3 class="text-xl font-semibold text-main mb-3">ジャノのレンズが捉えるもの</h3>
+                        <p class="big-number">無限の奥行き</p>
+                        <p class="text-gray-700 mt-2 text-base">ジャノの写真は、バロック宇宙の複雑な奥行きと没入的体験を捉えようとしました。</p>
+                    </div>
+                </div>
+
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <h3 class="text-xl font-semibold text-accent mb-4 text-center">補足情報：本稿の背景</h3>
+                     <div>
+                        <button class="ig-accordion-toggle bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-md w-full text-left mb-2 focus:outline-none focus:ring-2 focus:ring-accent">A. ドゥルーズの『襞』の文脈化 (クリックして展開)</button>
+                        <div class="ig-accordion-content bg-gray-50 p-4 rounded-md mb-2">
+                            <p>ジル・ドゥルーズの『襞 ライプニッツとバロック』は、バロックを単なる芸術様式ではなく、操作的な機能、思考の様式として理解するための独自の哲学的レンズを提供します。「襞」という統一的な原理に焦点を当て、バロックを「無限に至る襞」と定義します。</p>
+                        </div>
+                    </div>
+                    <div>
+                        <button class="ig-accordion-toggle bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-md w-full text-left mb-2 focus:outline-none focus:ring-2 focus:ring-accent">B. ジョルジオ・ジャノ：写真家、建築写真の先駆者 (クリックして展開)</button>
+                        <div class="ig-accordion-content bg-gray-50 p-4 rounded-md">
+                            <p>ジョルジオ・ジャノはピエモンテ地方のバロック建築、特に教会の天井を撮影した作品で知られています。大型カメラとアナログプロセスを用い、建築物を「厳粛」かつ「貴重な記録」として捉えました。晩年にはヒルベルトの「直観幾何学」に関心を示し、「バロックの宇宙」という概念を探求しました。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="section2" class="mb-12 scroll-mt-20">
+            <div class="card-bg rounded-lg shadow-xl p-6 md:p-8">
+                <h2 class="text-2xl md:text-3xl font-bold text-main mb-6 text-center">2. ジャノの視覚的実践：バロックの「情動」と「強度」の生成</h2>
+                <p class="text-gray-700 leading-relaxed mb-6 text-base md:text-lg">
+                    ジャノの手作りパノラマカメラとアナログ写真へのこだわりは、バロック空間が鑑賞者にもたらす「認知的・知覚的再構築」を捉えるための芸術的・知的探求でした。ドゥルーズの視点では、これはバロック建築という「襞」の迷宮が生み出す「情動」(affect) とその「強度」(intensity) を伝達する試みです。バロックの天井画は視覚的な襞を無限に増殖させ、既存の知覚様式を解体・再編成するような体験、ドゥルーズの言う「器官なき身体」にも似た状態を誘発します。
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+                    <div class="flex flex-col">
+                        <h3 class="text-xl font-semibold text-accent mb-3 text-center">情動の喚起：体験の比較</h3>
+                        <div class="chart-container flex-grow">
+                            <canvas id="affectChart"></canvas>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-3 text-center">ジャノのパノラマ写真は、建築記録を超えた深い知覚的体験をもたらすことを目指しました（図は比喩的表現）。</p>
+                    </div>
+                    <div class="text-center p-6 bg-accent-light rounded-lg flex flex-col justify-center">
+                        <h3 class="text-xl font-semibold text-main mb-4">光と影、空間の戯れ</h3>
+                        <div class="flex justify-around items-center h-48">
+                            <div class="w-1/3 h-full bg-accent-dark rounded-l-lg shadow-md transform -skew-y-3"></div>
+                            <div class="w-1/3 h-3/4 bg-accent-medium shadow-md z-10"></div>
+                            <div class="w-1/3 h-full bg-gray-300 rounded-r-lg shadow-md transform skew-y-3"></div>
+                        </div>
+                        <p class="text-gray-700 mt-4 text-base">バロック建築のダイナミックで劇的な様式は、光と影、空間的抑揚の強調によって、絶えず生成し変化する力の戯れとして捉えられます。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="section3" class="mb-12 scroll-mt-20">
+            <div class="card-bg rounded-lg shadow-xl p-6 md:p-8">
+                <h2 class="text-2xl md:text-3xl font-bold text-main mb-6 text-center">3. ヒルベルトの直観幾何学：「襞」の宇宙の地図製作</h2>
+                <p class="text-gray-700 leading-relaxed mb-6 text-base md:text-lg">
+                    ジャノが晩年にダフィット・ヒルベルトの『直観幾何学』に関心を寄せたことは重要です。この幾何学は「視覚的想像力」と「直接的理解」を重視し、特に「配置」や「位相幾何学」は、連結性や構造、連続変形の下で保存される空間特性に焦点を当てます。ドゥルーズ的視点では、これはバロックの「襞」が織りなす複雑な空間構造を、その空間に内在する関係性から理解するための「思考の地図」を提供するものです。
+                </p>
+                <div class="text-center">
+                    <h3 class="text-xl font-semibold text-accent mb-4">ヒルベルトによる「襞の宇宙」の構造的理解</h3>
+                    <div class="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-4 p-4">
+                        <div class="flowchart-node"><span>バロック空間<br>(襞の宇宙)</span></div>
+                        <div class="flowchart-arrow hidden md:block"><span>→</span></div>
+                        <div class="flowchart-arrow block md:hidden transform rotate-90"><span>→</span></div>
+                        <div class="flowchart-node"><span>直観幾何学<br>(ヒルベルト)</span></div>
+                        <div class="flowchart-arrow hidden md:block"><span>→</span></div>
+                        <div class="flowchart-arrow block md:hidden transform rotate-90"><span>→</span></div>
+                        <div class="flex flex-col space-y-2">
+                            <div class="flowchart-node text-sm"><span>位相幾何学 (Topologie)</span></div>
+                            <div class="flowchart-node text-sm"><span>配置 (Konfigurationen)</span></div>
+                        </div>
+                        <div class="flowchart-arrow hidden md:block"><span>→</span></div>
+                        <div class="flowchart-arrow block md:hidden transform rotate-90"><span>→</span></div>
+                        <div class="flowchart-node"><span>内在的構造の<br>把握</span></div>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-4">ヒルベルトの幾何学は、流動的で多中心的な「多様体」としてのバロック空間（しなやかな空間）を把握するのに適しています。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="section4" class="mb-12 scroll-mt-20">
+            <div class="card-bg rounded-lg shadow-xl p-6 md:p-8">
+                <h2 class="text-2xl md:text-3xl font-bold text-main mb-6 text-center">4. 再構成：ドゥルーズ、ジャノ、ヒルベルトによるバロック宇宙論</h2>
+                <p class="text-gray-700 leading-relaxed mb-6 text-base md:text-lg">
+                    これらの考察を統合すると、バロック宇宙は「襞」が絶え間なく自己増殖し、無限の運動と変容を続けるダイナミックなプロセス、「生成変化」の場として浮かび上がります。ジャノの写真は、この「襞の宇宙」へのアクセス装置であり、空間の潜在的な力を「現働化」させます。ヒルベルトの直観幾何学は、この複雑な宇宙を理解し航行するための「地図製作」のツールとなります。
+                </p>
+
+                <div class="mb-10">
+                    <h3 class="text-xl md:text-2xl font-semibold text-accent mb-6 text-center">主要概念の探求</h3>
+                    <div class="grid md:grid-cols-2 gap-6 mb-6">
+                        <div class="ig-concept-card bg-sky-50 p-4 rounded-lg shadow hover:shadow-xl" onclick="showIgModal('ig-pli-modal')">
+                            <h4 class="text-xl font-semibold text-sky-700 mb-2">A. 「襞」（Le Pli）：バロック宇宙の無限の線</h4>
+                            <p class="text-sm text-slate-600">バロックの主要な操作的機能であり、無限に自己増殖する線。物質と魂の二つの階層を持つとされます。(詳細を見る)</p>
+                        </div>
+                        <div class="ig-concept-card bg-sky-50 p-4 rounded-lg shadow hover:shadow-xl" onclick="showIgModal('ig-monad-modal')">
+                            <h4 class="text-xl font-semibold text-sky-700 mb-2">B. ライプニッツのモナド：内部性、表現、そしてバロック的パースペクティブ</h4>
+                            <p class="text-sm text-slate-600">各モナドは独自の見地から全世界を表現する「窓のない」内部性。魂の襞の座とされます。(詳細を見る)</p>
+                        </div>
+                    </div>
+                    <div class="ig-concept-card bg-sky-50 p-4 rounded-lg shadow hover:shadow-xl mb-6" onclick="showIgModal('ig-aesthetics-modal')">
+                        <h4 class="text-xl font-semibold text-sky-700 mb-2">C. バロックの美学：多様体、無限、そして光と影のドラマツルギー</h4>
+                        <p class="text-sm text-slate-600">無限の襞の「迷宮」としてのバロック世界。ダイナミックな形態、無限の喚起、光と影の劇的な使用が特徴です。(詳細を見る)</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-xl font-semibold text-accent mb-4 text-center">概念の相互作用</h3>
+                        <div class="space-y-6 p-4 border border-gray-200 rounded-lg">
+                            <div class="flex items-center justify-center">
+                                <div class="relationship-node">ドゥルーズ<br>「襞」</div>
+                            </div>
+                            <div class="flex items-center justify-center text-accent-medium text-2xl font-bold">&darr; &uarr;</div>
+                            <div class="flex items-center justify-center">
+                                <div class="relationship-node bg-accent-light">ジャノ<br>写真・情動</div>
+                                <div class="relationship-connector"></div>
+                                <div class="relationship-node bg-accent-light">ヒルベルト<br>直観幾何学・地図</div>
+                            </div>
+                            <div class="flex items-center justify-center text-accent-medium text-2xl font-bold">&darr;</div>
+                            <div class="flex items-center justify-center">
+                                <div class="relationship-node p-4 bg-accent-dark text-white text-lg">バロック宇宙<br>(襞の宇宙・生成変化)</div>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-3 text-center">三者の思想が交差し、「襞の宇宙」の理解が深まります。</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-accent mb-4 text-center">「新しい科学思想」の探求</h3>
+                        <ul class="list-disc list-inside space-y-3 text-gray-700 bg-gray-50 p-6 rounded-lg border border-gray-200">
+                            <li>芸術的直観と科学的思考の統合</li>
+                            <li>複雑な空間体験を理解する新枠組み</li>
+                            <li>表象の秩序ではなく、力の配置と強度の生成を問う</li>
+                            <li>固定された本質ではなく、絶え間ない差異化のプロセスを探求</li>
+                            <li>アナログ写真の物質性：デジタル時代の均質化への抵抗（マイナーな実践）</li>
+                        </ul>
+                        <p class="text-sm text-gray-600 mt-3 text-center">ジャノが目指したものは、ドゥルーズ哲学によってさらに深められます。</p>
+                    </div>
+                </div>
+
+                <div class="mt-10 pt-6 border-t border-gray-200">
+                    <h3 class="text-xl md:text-2xl font-semibold text-accent mb-6 text-center">詳細概念：表で見るドゥルーズとジャノ</h3>
+                     <div class="mb-8">
+                        <h4 class="text-lg font-semibold text-main mb-3">表1：『襞』における主要なドゥルーズ的バロック概念</h4>
+                        <p class="text-sm text-gray-600 mb-4">以下のカードをクリックすると、各概念の詳細が表示されます。</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div class="ig-concept-card bg-gray-100 p-3 rounded-md shadow" onclick="showIgModal('ig-table1-pli-modal')">
+                                <h5 class="font-semibold text-main">襞 (Pli/Fold)</h5>
+                                <p class="text-xs text-gray-600">操作的機能、無限の線...</p>
+                            </div>
+                            <div class="ig-concept-card bg-gray-100 p-3 rounded-md shadow" onclick="showIgModal('ig-table1-monad-modal')">
+                                <h5 class="font-semibold text-main">モナド (Monade/Monad)</h5>
+                                <p class="text-xs text-gray-600">視点、窓のない内部性...</p>
+                            </div>
+                            <div class="ig-concept-card bg-gray-100 p-3 rounded-md shadow" onclick="showIgModal('ig-table1-infini-modal')">
+                                <h5 class="font-semibold text-main">無限 (Infini/Infinity)</h5>
+                                <p class="text-xs text-gray-600">襞の無限の連続...</p>
+                            </div>
+                            <div class="ig-concept-card bg-gray-100 p-3 rounded-md shadow" onclick="showIgModal('ig-table1-multiplicite-modal')">
+                                <h5 class="font-semibold text-main">多様体 (Multiplicité/Multiplicity)</h5>
+                                <p class="text-xs text-gray-600">多様な仕方で折り畳まれたもの...</p>
+                            </div>
+                            <div class="ig-concept-card bg-gray-100 p-3 rounded-md shadow" onclick="showIgModal('ig-table1-clair-obscur-modal')">
+                                <h5 class="font-semibold text-main">バロック的明暗法 (Clair-obscur baroque)</h5>
+                                <p class="text-xs text-gray-600">暗い地盤からの光の噴出...</p>
+                            </div>
+                            <div class="ig-concept-card bg-gray-100 p-3 rounded-md shadow" onclick="showIgModal('ig-table1-monde-baroque-modal')">
+                                <h5 class="font-semibold text-main">バロック的世界 (Monde Baroque)</h5>
+                                <p class="text-xs text-gray-600">絶え間ない生成変化の宇宙...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold text-main mb-3">表2：ジョルジオ・ジャノのバロック建築への写真的・知的手法</h4>
+                        <p class="text-sm text-gray-600 mb-4">以下のカードをクリックすると、ジャノの各手法の詳細が表示されます。</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div class="ig-concept-card bg-gray-100 p-3 rounded-md shadow" onclick="showIgModal('ig-table2-camera-modal')">
+                                <h5 class="font-semibold text-main">カメラフォーマット</h5>
+                                <p class="text-xs text-gray-600">大型フォーマット...</p>
+                            </div>
+                            <div class="ig-concept-card bg-gray-100 p-3 rounded-md shadow" onclick="showIgModal('ig-table2-lens-modal')">
+                                <h5 class="font-semibold text-main">レンズ選択</h5>
+                                <p class="text-xs text-gray-600">超広角、手作りパノラマ...</p>
+                            </div>
+                            <div class="ig-concept-card bg-gray-100 p-3 rounded-md shadow" onclick="showIgModal('ig-table2-subject-modal')">
+                                <h5 class="font-semibold text-main">被写体の焦点</h5>
+                                <p class="text-xs text-gray-600">教会の天頂、空間全体...</p>
+                            </div>
+                            <div class="ig-concept-card bg-gray-100 p-3 rounded-md shadow" onclick="showIgModal('ig-table2-process-modal')">
+                                <h5 class="font-semibold text-main">プロセス</h5>
+                                <p class="text-xs text-gray-600">アナログ暗室...</p>
+                            </div>
+                             <div class="ig-concept-card bg-gray-100 p-3 rounded-md shadow" onclick="showIgModal('ig-table2-goal-modal')">
+                                <h5 class="font-semibold text-main">表明された目標/概念</h5>
+                                <p class="text-xs text-gray-600">「厳粛な記録」、「バロックの宇宙」...</p>
+                            </div>
+                            <div class="ig-concept-card bg-gray-100 p-3 rounded-md shadow" onclick="showIgModal('ig-table2-interest-modal')">
+                                <h5 class="font-semibold text-main">知的関心</h5>
+                                <p class="text-xs text-gray-600">ヒルベルトの「直観幾何学」...</p>
+                            </div>
+                             <div class="ig-concept-card bg-gray-100 p-3 rounded-md shadow" onclick="showIgModal('ig-table2-evaluation-modal')">
+                                <h5 class="font-semibold text-main">写真家としての評価</h5>
+                                <p class="text-xs text-gray-600">建築写真の先駆者...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="section5" class="mb-12 scroll-mt-20">
+            <div class="card-bg rounded-lg shadow-xl p-6 md:p-8">
+                <h2 class="text-2xl md:text-3xl font-bold text-main mb-6 text-center">5. 結論：生成する宇宙としてのバロックとその現代的意義</h2>
+                <p class="text-gray-700 leading-relaxed mb-6 text-base md:text-lg">
+                    ジャノの写真実践、ヒルベルトの幾何学への関心、そしてドゥルーズの「襞」の哲学を重ねることで、バロック宇宙論は、歴史的様式論を超え、絶えず生成し変化するダイナミックな「思考＝物質」の宇宙として再構成されます。ジャノが捉えた「バロックの宇宙」は、観る者の知覚を巻き込み、新たな体験と意味を生成し続ける開かれたシステムです。これは、ドゥルーズが『アンチ・オイディプス』で示した「機械」としての宇宙像とも響き合います。
+                </p>
+                <div class="text-center p-8 bg-accent-dark text-white rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-3">現代への示唆</h3>
+                    <p class="text-xl leading-relaxed">
+                        この再構成されたバロック宇宙論は、複雑化・流動化する現代空間（仮想空間、情報空間、グローバル都市など）を理解し、新たな価値を見出すための重要な手がかりを与えます。
+                    </p>
+                    <p class="mt-4 text-highlight font-semibold text-lg">
+                        ジャノの「新しい科学思想」の探求は、世界を知覚し関わるための新たな「生の様式」の創造へと繋がります。
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section id="quiz-section" class="mb-12 scroll-mt-20 py-12 quiz-section-bg rounded-lg shadow-xl">
+            <div id="quiz-container-wrapper" class="quiz-container">
+                <h1 id="quiz-title" class="text-2xl sm:text-3xl font-bold text-center mb-6 text-sky-400">ドゥルーズ、ジャノ、バロック宇宙論 クイズ</h1>
+                <div id="quiz-question-area" class="mb-6">
+                    <p id="quiz-question-text" class="text-lg sm:text-xl mb-4 min-h-[60px]"></p>
+                    <div id="quiz-answer-options" class="grid grid-cols-1 gap-3">
+                        </div>
+                </div>
+                <div id="quiz-feedback-area" class="mb-6 min-h-[80px]">
+                    <div id="quiz-hint-area" class="mb-3 hidden">
+                        <p class="text-sm text-sky-300"><span class="font-semibold">ヒント：</span> <span id="quiz-hint-text"></span></p>
+                    </div>
+                    <div id="quiz-rationale-area" class="p-3 bg-slate-700 rounded-lg hidden">
+                        <p id="quiz-rationale-text" class="text-sm"></p>
+                    </div>
+                </div>
+                <div id="quiz-navigation-area" class="flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <button id="quiz-hint-button" class="quiz-button-base w-full sm:w-auto bg-sky-500 hover:bg-sky-600">ヒントを見る</button>
+                    <button id="quiz-next-button" class="quiz-button-base w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 hidden">次の問題へ</button>
+                </div>
+                <div id="quiz-results-area" class="text-center hidden mt-8">
+                    <h2 class="text-2xl font-bold mb-4 text-sky-400">クイズ終了！</h2>
+                    <p id="quiz-score-text" class="text-xl mb-6"></p>
+                    <button id="quiz-restart-button" class="quiz-button-base bg-sky-500 hover:bg-sky-600 py-3 px-6">もう一度挑戦する</button>
+                </div>
+                <p id="quiz-progress-text" class="text-sm text-center mt-4 text-slate-400"></p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-800 text-gray-300 text-center p-6 mt-12">
+        <p class="text-sm">&copy; 2024 ドゥルーズ、ジャノ、バロック宇宙論 探求ページ. All rights reserved (for demo purposes).</p>
+        <p class="text-xs mt-1">このページは提供された情報に基づいて作成された概念的なウェブサイトです。</p>
+    </footer>
+
+    <div id="ig-pli-modal" class="ig-modal">
+        <div class="ig-modal-content">
+            <span class="ig-close-button absolute top-2 right-4 text-2xl font-bold text-gray-600 hover:text-red-600" onclick="closeIgModal('ig-pli-modal')">&times;</span>
+            <h3 class="text-xl font-bold text-sky-700 mb-3">「襞」（Le Pli）：バロック宇宙の無限の線</h3>
+            <p class="mb-2 text-gray-700"><strong>定義と中心性:</strong> 「襞」はバロックの主要な操作的機能であり、それ自体を無限に生産し増殖させます。それは本質ではなくプロセスです。ドゥルーズによれば、「バロックはたえまなく襞を生み出すのであり、事物を作りだすのではない。（中略）バロックの線とは、無限にいたる襞である」とされます。</p>
+            <p class="mb-2 text-gray-700"><strong>襞の二つの階層:</strong> 物質の折り目（下の階）と魂の襞（上の階）という二つの階層を持ちます。下の階は物質の襞、器官、無限の海綿体、外部性に関連し、バロック建築の触知可能で物理的な側面に対応します。上の階は魂の襞、内部性、窓のない閉ざされた部屋だが下の階の活動と共鳴し、モナドの表現的・知覚的能力と結びつきます。</p>
+            <p class="text-gray-700"><strong>フラクタルかつ無限のプロセスとしての襞:</strong> 襞はさらなる襞を内包し、それが無限に続くことで、複雑で迷宮的な宇宙を創造するという考え方です。この襞の概念は、単に連結するだけでなく、同時に分離するものでもあります。</p>
+        </div>
+    </div>
+    <div id="ig-monad-modal" class="ig-modal">
+        <div class="ig-modal-content">
+            <span class="ig-close-button absolute top-2 right-4 text-2xl font-bold text-gray-600 hover:text-red-600" onclick="closeIgModal('ig-monad-modal')">&times;</span>
+            <h3 class="text-xl font-bold text-sky-700 mb-3">ライプニッツのモナド：内部性、表現、そしてバロック的パースペクティブ</h3>
+            <p class="mb-2 text-gray-700"><strong>視点としてのモナド:</strong> 各モナドは、独自の見地から全世界を表現する。「窓のない」しかし全てを包括する内部性です。ドゥルーズは、「世界は、それぞれどの見方でもあますところなく表現出来る。だからこそ一つのモナドを選んだときには、他の全てのものは潜在的にこのモナドの世界に託されるのだ。モナドには他のモナドに交わるべき窓がない」と述べています。</p>
+            <p class="mb-2 text-gray-700"><strong>モナドと襞:</strong> 魂（モナド）は襞の「上の階」として、それ自身の無限の内部の襞を含みます。モナドの知覚はこれらの内部の襞です。</p>
+            <p class="text-gray-700"><strong>中心から視点へ:</strong> ドゥルーズの解釈は、宇宙の単一の客観的中心から、主観的でモナド的な視点の多様性への移行を示唆し、これが「新しい調和」を構成するとされます。「窓がない」にもかかわらず、モナドは世界を能動的に「表現」し、これは単純な反映ではなく、内部のダイナミズムと解釈のプロセスを意味します。</p>
+        </div>
+    </div>
+    <div id="ig-aesthetics-modal" class="ig-modal">
+        <div class="ig-modal-content">
+            <span class="ig-close-button absolute top-2 right-4 text-2xl font-bold text-gray-600 hover:text-red-600" onclick="closeIgModal('ig-aesthetics-modal')">&times;</span>
+            <h3 class="text-xl font-bold text-sky-700 mb-3">バロックの美学：多様体、無限、そして光と影のドラマツルギー</h3>
+            <p class="mb-2 text-gray-700"><strong>多様体と迷宮:</strong> バロック世界は無限の襞の「迷宮」であり、「〈多〉とは、単にたくさんの部分をもつものではなく、たくさんの仕方で折り畳まれるもののことである」とされます。</p>
+            <p class="mb-2 text-gray-700"><strong>無限の感覚:</strong> バロック芸術と建築は、ダイナミックな形態、曲線、そして明確な境界の解消を通じて無限を喚起することを目指します。曲線や波打つようなファサード、華麗な装飾を用い、運動と壮大さの感覚を生み出します。</p>
+            <p class="mb-2 text-gray-700"><strong>光と影（キアロスクーロ）:</strong> 光と影の劇的な使用は、深さ、ダイナミズム、精神的な強度を生み出す主要なバロックの特徴です。ドゥルーズの解釈では、「暗い地盤」（fuscum）が基礎となり、光は暗いモナド内部の「噴出」であり、キアロスクーロは「光の内部性」であるとされます。</p>
+            <p class="text-gray-700"><strong>出来事としてのバロック:</strong> ドゥルーズの哲学では静的な本質よりも「出来事」が強調されます。ダイナミズム、光と影の相互作用、無限の展開といった要素は、絶え間ない変化の中にある世界、一連の出来事を示唆します。</p>
+        </div>
+    </div>
+    <div id="ig-table1-pli-modal" class="ig-modal"><div class="ig-modal-content"><span class="ig-close-button absolute top-2 right-4 text-2xl font-bold text-gray-600 hover:text-red-600" onclick="closeIgModal('ig-table1-pli-modal')">&times;</span><h4 class="text-xl font-bold text-sky-700 mb-3">襞 (Pli/Fold)</h4><p class="text-gray-700"><strong>ドゥルーズの文脈における簡単な定義:</strong> バロックの操作的機能、無限に自己増殖する線、物質と魂の二重の折り畳み。</p><p class="text-gray-700"><strong>バロック美学/世界観への関連性:</strong> ダイナミズム、連続性、複雑性、空間の生成。</p><p class="text-gray-700"><strong>ライプニッツとの関連:</strong> モナドの内的世界の構成、世界の表現様式。</p></div></div>
+    <div id="ig-table1-monad-modal" class="ig-modal"><div class="ig-modal-content"><span class="ig-close-button absolute top-2 right-4 text-2xl font-bold text-gray-600 hover:text-red-600" onclick="closeIgModal('ig-table1-monad-modal')">&times;</span><h4 class="text-xl font-bold text-sky-700 mb-3">モナド (Monade/Monad)</h4><p class="text-gray-700"><strong>ドゥルーズの文脈における簡単な定義:</strong> 世界を表現する視点、窓のない内部性、魂の襞の座。</p><p class="text-gray-700"><strong>バロック美学/世界観への関連性:</strong> パースペクティブの多様性、主観的宇宙観、内的世界の深遠さ。</p><p class="text-gray-700"><strong>ライプニッツとの関連:</strong> 単純実体、力の中心、世界の鏡。</p></div></div>
+    <div id="ig-table1-infini-modal" class="ig-modal"><div class="ig-modal-content"><span class="ig-close-button absolute top-2 right-4 text-2xl font-bold text-gray-600 hover:text-red-600" onclick="closeIgModal('ig-table1-infini-modal')">&times;</span><h4 class="text-xl font-bold text-sky-700 mb-3">無限 (Infini/Infinity)</h4><p class="text-gray-700"><strong>ドゥルーズの文脈における簡単な定義:</strong> 襞の無限の連続、世界のフラクタルな自己相似性、境界の溶解。</p><p class="text-gray-700"><strong>バロック美学/世界観への関連性:</strong> 壮大さ、超越性、限定されない空間感覚。</p><p class="text-gray-700"><strong>ライプニッツとの関連:</strong> 微積分学、連続の法則、神の無限性。</p></div></div>
+    <div id="ig-table1-multiplicite-modal" class="ig-modal"><div class="ig-modal-content"><span class="ig-close-button absolute top-2 right-4 text-2xl font-bold text-gray-600 hover:text-red-600" onclick="closeIgModal('ig-table1-multiplicite-modal')">&times;</span><h4 class="text-xl font-bold text-sky-700 mb-3">多様体 (Multiplicité/Multiplicity)</h4><p class="text-gray-700"><strong>ドゥルーズの文脈における簡単な定義:</strong> 単なる部分の集合ではなく、多様な仕方で折り畳まれたもの、迷宮的構造。</p><p class="text-gray-700"><strong>バロック美学/世界観への関連性:</strong> 装飾の豊かさ、形態の複雑な絡み合い、世界の多層性。</p><p class="text-gray-700"><strong>ライプニッツとの関連:</strong> 可能世界の共存、複合実体。</p></div></div>
+    <div id="ig-table1-clair-obscur-modal" class="ig-modal"><div class="ig-modal-content"><span class="ig-close-button absolute top-2 right-4 text-2xl font-bold text-gray-600 hover:text-red-600" onclick="closeIgModal('ig-table1-clair-obscur-modal')">&times;</span><h4 class="text-xl font-bold text-sky-700 mb-3">バロック的明暗法 (Clair-obscur baroque)</h4><p class="text-gray-700"><strong>ドゥルーズの文脈における簡単な定義:</strong> 暗い地盤(fuscum)からの光の噴出、光の内部性、魂と身体の折り畳みの象徴。</p><p class="text-gray-700"><strong>バロック美学/世界観への関連性:</strong> 劇的効果、精神的深さ、空間のダイナミズム、可視と不可視の戯れ。</p><p class="text-gray-700"><strong>ライプニッツとの関連:</strong> モナドの知覚の明晰度の差異、感覚的経験の複雑性。</p></div></div>
+    <div id="ig-table1-monde-baroque-modal" class="ig-modal"><div class="ig-modal-content"><span class="ig-close-button absolute top-2 right-4 text-2xl font-bold text-gray-600 hover:text-red-600" onclick="closeIgModal('ig-table1-monde-baroque-modal')">&times;</span><h4 class="text-xl font-bold text-sky-700 mb-3">バロック的世界 (Monde Baroque)</h4><p class="text-gray-700"><strong>ドゥルーズの文脈における簡単な定義:</strong> 無限の襞によって構成される、絶え間ない生成変化の宇宙、二階建ての構造（物質と魂）。</p><p class="text-gray-700"><strong>バロック美学/世界観への関連性:</strong> 運動、緊張、変容、世界の演劇性。</p><p class="text-gray-700"><strong>ライプニッツとの関連:</strong> 予定調和、最善可能世界、力の宇宙。</p></div></div>
+    <div id="ig-table2-camera-modal" class="ig-modal"><div class="ig-modal-content"><span class="ig-close-button absolute top-2 right-4 text-2xl font-bold text-gray-600 hover:text-red-600" onclick="closeIgModal('ig-table2-camera-modal')">&times;</span><h4 class="text-xl font-bold text-sky-700 mb-3">カメラフォーマット</h4><p class="text-gray-700"><strong>記述された特徴:</strong> 大型フォーマット。</p><p class="text-gray-700"><strong>潜在的意義:</strong> ディテール/階調の豊かさ、荘厳さ、物質性。</p><p class="text-gray-700"><strong>ドゥルーズ/ヒルベルト概念との関連:</strong> 襞の無限のディテール、物質の折り目。</p></div></div>
+    <div id="ig-table2-lens-modal" class="ig-modal"><div class="ig-modal-content"><span class="ig-close-button absolute top-2 right-4 text-2xl font-bold text-gray-600 hover:text-red-600" onclick="closeIgModal('ig-table2-lens-modal')">&times;</span><h4 class="text-xl font-bold text-sky-700 mb-3">レンズ選択</h4><p class="text-gray-700"><strong>記述された特徴:</strong> シュナイダー スーパーアンギュロン / ゲルツ ハイペルゴン (超広角)、手作りパノラマカメラ。</p><p class="text-gray-700"><strong>潜在的意義:</strong> 没入感/広大さ、天井の「襞」の上方への展開の捕捉、空間の全体的把握。</p><p class="text-gray-700"><strong>ドゥルーズ/ヒルベルト概念との関連:</strong> 無限、多様体、ヒルベルトの「配置」「全体的把握」。</p></div></div>
+    <div id="ig-table2-subject-modal" class="ig-modal"><div class="ig-modal-content"><span class="ig-close-button absolute top-2 right-4 text-2xl font-bold text-gray-600 hover:text-red-600" onclick="closeIgModal('ig-table2-subject-modal')">&times;</span><h4 class="text-xl font-bold text-sky-700 mb-3">被写体の焦点</h4><p class="text-gray-700"><strong>記述された特徴:</strong> 教会の天頂（天井画）、バロック空間全体。</p><p class="text-gray-700"><strong>潜在的意義:</strong> 「上の階」の表現、無限への志向、バロックの「宇宙」の体験。</p><p class="text-gray-700"><strong>ドゥルーズ/ヒルベルト概念との関連:</strong> 襞の上の階、無限、モナド的視点、ヒルベルトの直観的空間理解。</p></div></div>
+    <div id="ig-table2-process-modal" class="ig-modal"><div class="ig-modal-content"><span class="ig-close-button absolute top-2 right-4 text-2xl font-bold text-gray-600 hover:text-red-600" onclick="closeIgModal('ig-table2-process-modal')">&times;</span><h4 class="text-xl font-bold text-sky-700 mb-3">プロセス</h4><p class="text-gray-700"><strong>記述された特徴:</strong> アナログ暗室。</p><p class="text-gray-700"><strong>潜在的意義:</strong> 物質性/貴重性、光と影の微妙なニュアンスの記録、「時間の堆積」。</p><p class="text-gray-700"><strong>ドゥルーズ/ヒルベルト概念との関連:</strong> 光の「出来事」、キアロスクーロ、襞の歴史性。</p></div></div>
+    <div id="ig-table2-goal-modal" class="ig-modal"><div class="ig-modal-content"><span class="ig-close-button absolute top-2 right-4 text-2xl font-bold text-gray-600 hover:text-red-600" onclick="closeIgModal('ig-table2-goal-modal')">&times;</span><h4 class="text-xl font-bold text-sky-700 mb-3">表明された目標/概念</h4><p class="text-gray-700"><strong>記述された特徴:</strong> 「厳粛な記録」、「バロックの宇宙」。</p><p class="text-gray-700"><strong>潜在的意義:</strong> 畏敬の念/瞑想の喚起、バロックの精神性・体験的空間の伝達。</p><p class="text-gray-700"><strong>ドゥルーズ/ヒルベルト概念との関連:</strong> モナドの内部性、無限の感覚、ヒルベルトの直観的体験。</p></div></div>
+    <div id="ig-table2-interest-modal" class="ig-modal"><div class="ig-modal-content"><span class="ig-close-button absolute top-2 right-4 text-2xl font-bold text-gray-600 hover:text-red-600" onclick="closeIgModal('ig-table2-interest-modal')">&times;</span><h4 class="text-xl font-bold text-sky-700 mb-3">知的関心</h4><p class="text-gray-700"><strong>記述された特徴:</strong> ヒルベルトの「直観幾何学」。</p><p class="text-gray-700"><strong>潜在的意義:</strong> バロック空間の構造的・哲学的理解の深化。</p><p class="text-gray-700"><strong>ドゥルーズ/ヒルベルト概念との関連:</strong> 襞の構造、多様体の位相幾何学的理解。</p></div></div>
+    <div id="ig-table2-evaluation-modal" class="ig-modal"><div class="ig-modal-content"><span class="ig-close-button absolute top-2 right-4 text-2xl font-bold text-gray-600 hover:text-red-600" onclick="closeIgModal('ig-table2-evaluation-modal')">&times;</span><h4 class="text-xl font-bold text-sky-700 mb-3">写真家としての評価</h4><p class="text-gray-700"><strong>記述された特徴:</strong> 建築写真の先駆者、光と影・空間表現の卓越性。</p><p class="text-gray-700"><strong>潜在的意義:</strong> バロック美学の深い視覚的理解と表現。</p><p class="text-gray-700"><strong>ドゥルーズ/ヒルベルト概念との関連:</strong> キアロスクーロ、襞のダイナミズム。</p></div></div>
+
+
+    <script>
+        // メイン論文記事のスクリプト (コード①)
+        function wrapLabels(label, maxWidth) {
+            if (typeof label !== 'string') return label;
+            const words = label.split(' ');
+            let lines = [];
+            let currentLine = '';
+            for (const word of words) {
+                if ((currentLine + word).length > maxWidth && currentLine.length > 0) {
+                    lines.push(currentLine.trim());
+                    currentLine = word + ' ';
+                } else {
+                    currentLine += word + ' ';
+                }
+            }
+            if (currentLine.trim().length > 0) {
+                lines.push(currentLine.trim());
+            }
+            return lines.length > 0 ? lines : [label];
+        }
+
+        const affectCtx = document.getElementById('affectChart');
+        if (affectCtx) {
+            const affectData = {
+                labels: [
+                    wrapLabels('標準的な建築写真の体験深度', 16),
+                    wrapLabels('ジャノのパノラマ写真による体験深度', 16)
+                ],
+                datasets: [{
+                    label: '知覚的体験の深さ (比喩的)',
+                    data: [30, 90],
+                    backgroundColor: [
+                        '#A6D8F0', // Light Blue
+                        '#3E92CC'  // Medium Blue
+                    ],
+                    borderColor: [
+                        '#3E92CC',
+                        '#0A2463'
+                    ],
+                    borderWidth: 1
+                }]
+            };
+            new Chart(affectCtx, {
+                type: 'bar',
+                data: affectData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            suggestedMax: 100,
+                            ticks: { color: '#212529', font: { size: 10 } }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#212529',
+                                font: { size: 10 },
+                                callback: function(value, index, values) {
+                                    const label = this.getLabelForValue(value);
+                                    return Array.isArray(label) ? label : wrapLabels(label, 10);
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#212529', font: { size: 12 } } },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    let label = item.chart.data.labels[item.dataIndex];
+                                    return Array.isArray(label) ? label.join(' ') : label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        document.querySelectorAll('nav a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    // スティッキーナビゲーションの高さを考慮してスクロール位置を調整
+                    const navHeight = document.querySelector('.sticky-nav').offsetHeight;
+                    const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - navHeight - 20; // 20pxのオフセットを追加
+
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // インフォグラフ要素のスクリプト (コード②由来)
+        const igAccordionToggles = document.querySelectorAll('.ig-accordion-toggle');
+        igAccordionToggles.forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const content = toggle.nextElementSibling;
+                if (content.style.maxHeight) {
+                    content.style.maxHeight = null;
+                    toggle.textContent = toggle.textContent.replace('(クリックして閉じる)', '(クリックして展開)');
+                } else {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                    toggle.textContent = toggle.textContent.replace('(クリックして展開)', '(クリックして閉じる)');
+                }
+            });
+        });
+
+        function showIgModal(modalId) {
+            document.getElementById(modalId).style.display = "block";
+        }
+
+        function closeIgModal(modalId) {
+            document.getElementById(modalId).style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.ig-modal');
+            modals.forEach(modal => {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            });
+        }
+
+        // クイズのスクリプト (コード③由来)
+        const quizData = {
+            "questions": [{
+                "question": "ドゥルーズが論じるバロックの本質としての「襞（le pli）」とは、主に何を意味しますか？",
+                "answerOptions": [{
+                    "text": "静的で完成された建築様式", "isCorrect": false, "rationale": "「襞」は絶え間ない運動と変容のダイナミズムを指しており、静的な様式とは異なります。"
+                }, {
+                    "text": "無限を有限のうちに包み込み、絶え間ない運動と変容を生み出すダイナミズム", "isCorrect": true, "rationale": "この選択肢は、本文で説明されている「襞」の核心的特徴、すなわち無限の包摂と動的な変容性を的確に捉えています。"
+                }, {
+                    "text": "単なる表面的な装飾技法", "isCorrect": false, "rationale": "「襞」は表面的な装飾に留まらず、世界を捉える根本的な思考様式とされています。"
+                }, {
+                    "text": "合理性と秩序を追求する古典主義的理想", "isCorrect": false, "rationale": "バロックの「襞」は、古典主義的な合理性や秩序とは異なる、複雑さや流動性を特徴とします。"
+                }],
+                "hint": "「襞」は、内と外、有限と無限をどのように関連付ける概念でしょうか？"
+            }, {
+                "question": "ジョルジオ・ジャノのパノラマ写真は、ドゥルーズ的観点からどのように解釈できますか？",
+                "answerOptions": [{
+                    "text": "バロック建築の正確な技術的記録の試み", "isCorrect": false, "rationale": "ジャノの写真は単なる記録を超え、バロック空間の本質を捉えようとする芸術的探求とされています。"
+                }, {
+                    "text": "バロック建築の「襞」が生み出す「情動」を捉え、その「強度」を伝達する試み", "isCorrect": true, "rationale": "本文では、ジャノの写真がバロックの「襞」の迷宮が生み出す情動と強度を捉えようとするものとして説明されています。"
+                }, {
+                    "text": "デジタル技術を用いた新しい空間表現の模索", "isCorrect": false, "rationale": "ジャノは手作りパノラマカメラとアナログ写真にこだわったとされており、デジタル技術とは異なります。"
+                }, {
+                    "text": "バロック空間の静的な美しさを強調する試み", "isCorrect": false, "rationale": "ジャノの写真は、バロックのダイナミックな側面や没入感を捉えようとしており、静的な美しさの強調に留まりません。"
+                }],
+                "hint": "ジャノの写真は、バロック空間が鑑賞者に与えるどのような体験を捉えようとしたのでしょうか？"
+            }, {
+                "question": "ジャノが晩年にヒルベルトの『直観幾何学』に関心を示したことは、彼の探求においてどのような意味を持つと論じられていますか？",
+                "answerOptions": [{
+                    "text": "バロック芸術の非合理性を数学的に否定するため", "isCorrect": false, "rationale": "ヒルベルトの直観幾何学は、バロックの複雑な空間構造を理解するための新たな視点を提供するものであり、否定を目的としていません。"
+                }, {
+                    "text": "写真技術の限界を感じ、より厳密な科学的アプローチへ移行するため", "isCorrect": false, "rationale": "ヒルベルトへの関心は、写真で捉えた直観を構造的に理解し言語化するための方法論の探求であり、写真技術の放棄ではありません。"
+                }, {
+                    "text": "自らが写真で直観的に捉えてきた「襞の宇宙」の構造的論理を言語化し伝達するための新たな方法論の発見", "isCorrect": true, "rationale": "本文では、ヒルベルトの直観幾何学が、ジャノが捉えた「襞の宇宙」の根底にある構造的論理を理解し伝達する手段となる可能性が示唆されています。"
+                }, {
+                    "text": "バロック建築の設計にユークリッド幾何学を応用するため", "isCorrect": false, "rationale": "ヒルベルトの直観幾何学、特に位相幾何学的なアプローチは、ユークリッド幾何学では捉えきれないバロック空間の特性を把握するのに適しています。"
+                }],
+                "hint": "ヒルベルトの幾何学は、ジャノが写真で捉えた「宇宙」をどのように理解する手助けとなるのでしょうか？"
+            }, {
+                "question": "論考における「バロック宇宙＝襞の宇宙」という概念の中心的な特徴は何ですか？",
+                "answerOptions": [{
+                    "text": "静的で秩序だった完成された構造", "isCorrect": false, "rationale": "「襞の宇宙」は、絶え間ない運動と変容を続けるダイナミックなプロセスであり、静的な構造とは対照的です。"
+                }, {
+                    "text": "明確な境界線によって内と外が区別される空間", "isCorrect": false, "rationale": "「襞の宇宙」は、内と外、有限と無限といった二項対立を絶えず折り畳み、越境する特徴を持ちます。"
+                }, {
+                    "text": "多様な力が相互作用し、特異点を生み出し続ける「生成変化」の場", "isCorrect": true, "rationale": "本文では、「襞の宇宙」が多様な力の相互作用による「生成変化」の場として描かれています。"
+                }, {
+                    "text": "単一の中心点から放射状に広がる均質な空間", "isCorrect": false, "rationale": "バロック空間は多中心的で流動的な「多様体」としての性格を持つとされており、均質な空間ではありません。"
+                }],
+                "hint": "この「宇宙」は、固定されたものか、それとも常に動き続けているものか考えてみましょう。"
+            }, {
+                "question": "ジャノの写真は、「襞の宇宙」に対してどのような役割を果たすとされていますか？",
+                "answerOptions": [{
+                    "text": "「襞の宇宙」を客観的に分析し、分類するための資料", "isCorrect": false, "rationale": "ジャノの写真は、単なる分析資料ではなく、宇宙へのアクセスを提供し、体験を「現働化」させる装置とされています。"
+                }, {
+                    "text": "「襞の宇宙」の存在を否定し、より単純な空間認識を促すもの", "isCorrect": false, "rationale": "ジャノの写真は「襞の宇宙」を肯定し、その複雑な体験へと鑑賞者を引き込むものとして描かれています。"
+                }, {
+                    "text": "「襞の宇宙」への特権的なアクセスを提供し、その「情動」を現働化させる装置", "isCorrect": true, "rationale": "本文の記述によれば、ジャノの写真は「襞の宇宙」へのアクセスを提供し、その潜在的な力や強度を「現働化」させる役割を持ちます。"
+                }, {
+                    "text": "「襞の宇宙」を完全に再現し、固定化するもの", "isCorrect": false, "rationale": "ジャノの写真は空間を「再現」するのではなく、その潜在的な力を引き出すものであり、固定化とは異なります。"
+                }],
+                "hint": "ジャノの写真は、私たちと「襞の宇宙」をどのようにつなげるのでしょうか？"
+            }, {
+                "question": "ヒルベルトの直観幾何学は、再構成されたバロック宇宙論において、どのようなツールとして機能すると述べられていますか？",
+                "answerOptions": [{
+                    "text": "バロックの過剰さを整理し、単純化するための法則", "isCorrect": false, "rationale": "ヒルベルトの直観幾何学は、複雑な「襞の宇宙」を理解するためのものであり、単純化を主目的とはしていません。"
+                }, {
+                    "text": "「襞の宇宙」を普遍的かつ超越的な視点から支配するための理論", "isCorrect": false, "rationale": "この幾何学は、普遍的な法則を押し付けるのではなく、空間の特異性や関係性を内在的に把握することを助けます。"
+                }, {
+                    "text": "複雑怪奇な「襞の宇宙」を理解し、その中を航行するための「地図製作（マッピング）」のツール", "isCorrect": true, "rationale": "本文では、ヒルベルトの直観幾何学が「襞の宇宙」を理解し航行するための「地図製作」のツールとして機能すると明確に述べられています。"
+                }, {
+                    "text": "バロック芸術の美的価値を数値化するための計算方法", "isCorrect": false, "rationale": "ヒルベルトの直観幾何学は、美的価値の数値化ではなく、空間構造の直観的理解を目指すものです。"
+                }],
+                "hint": "この幾何学は、「襞の宇宙」という未知の領域をどのように探索するのに役立つのでしょうか？"
+            }, {
+                "question": "ジャノが目指した「新しい科学思想」とは、どのようなものとして説明されていますか？",
+                "answerOptions": [{
+                    "text": "芸術的直観を排除し、純粋な客観的データのみに基づく科学", "isCorrect": false, "rationale": "ジャノの目指す「新しい科学思想」は、芸術的直観と科学的思考を統合するものであり、直観の排除ではありません。"
+                }, {
+                    "text": "既存の科学的枠組みを絶対視し、それに芸術を従属させる思考", "isCorrect": false, "rationale": "この思想は、既存の枠組みに囚われず、複雑な空間体験を理解するための新しい枠組みの探求です。"
+                }, {
+                    "text": "芸術的直観と科学的思考を統合し、複雑な空間体験を理解するための新しい枠組みの探求", "isCorrect": true, "rationale": "本文によれば、ジャノの「新しい科学思想」は、芸術的直観と科学的思考の統合による新しい理解の枠組みの探求です。"
+                }, {
+                    "text": "バロック時代の科学思想への回帰と、現代科学の否定", "isCorrect": false, "rationale": "これは過去への回帰ではなく、現代において新たな意味や価値を見出すための探求とされています。"
+                }],
+                "hint": "ジャノは、芸術と科学をどのように関連付けようとしたのでしょうか？"
+            }, {
+                "question": "ドゥルーズの哲学は、ジャノの「新しい科学思想」の探求にどのような影響を与えると論じられていますか？",
+                "answerOptions": [{
+                    "text": "表象の秩序を重視する伝統的な科学観を強化する", "isCorrect": false, "rationale": "ドゥルーズ哲学は、表象の秩序ではなく、力の配置と強度の生成を問うものであり、伝統的科学観の強化とは異なります。"
+                }, {
+                    "text": "固定された本質を探求する思考を深める", "isCorrect": false, "rationale": "ドゥルーズ哲学は、固定された本質ではなく、絶え間ない差異化のプロセスを探求する思考を促します。"
+                }, {
+                    "text": "力の配置と強度の生成を問い、絶え間ない差異化のプロセスを探求する思考として奥行きを与える", "isCorrect": true, "rationale": "本文では、ドゥルーズ哲学が、力の配置や強度の生成、差異化のプロセスを探求する思考として、ジャノの探求に奥行きを与えると述べられています。"
+                }, {
+                    "text": "アナログ的な実践を否定し、デジタル技術への移行を促す", "isCorrect": false, "rationale": "ジャノのアナログ写真へのこだわりは、ドゥルーズ的な「マイナーな実践」として意義を持つとされており、否定されていません。"
+                }],
+                "hint": "ドゥルーズの哲学は、物事を固定的に見るか、それとも流動的に見るか、どちらを重視するでしょうか？"
+            }, {
+                "question": "再構成されたバロック宇宙論の現代的意義として、最も適切なものはどれですか？",
+                "answerOptions": [{
+                    "text": "歴史的様式としてのバロックの正確な再評価", "isCorrect": false, "rationale": "この宇宙論は単なる歴史的様式論を超え、現代の複雑な空間を理解するための示唆を与えるものとされています。"
+                }, {
+                    "text": "現代のデジタル技術の限界を指摘し、アナログ回帰を主張すること", "isCorrect": false, "rationale": "アナログへの注視は評価されていますが、現代的意義はより広範な、現代空間の理解と新たな生の様式の創造にあります。"
+                }, {
+                    "text": "複雑化・流動化する現代空間を理解し、新たな意味や価値を見出すための示唆", "isCorrect": true, "rationale": "本文の結論部分では、この再構成されたバロック宇宙論が、現代の複雑な空間を理解し、新たな意味や価値を見出すための重要な示唆を与えると述べられています。"
+                }, {
+                    "text": "古典的な宇宙観への回帰と、現代思想の相対化", "isCorrect": false, "rationale": "これは過去への回帰ではなく、現代における新たな可能性の探求へと接続するものとされています。"
+                }],
+                "hint": "このバロック宇宙論は、現代のどのような「空間」を考える上で役立つでしょうか？"
+            }, {
+                "question": "ドゥルーズが言う「器官なき身体（BwO）」と関連付けられるバロック的体験とは、どのようなものですか？",
+                "answerOptions": [{
+                    "text": "物理的身体の快楽を最大限に追求する体験", "isCorrect": false, "rationale": "「器官なき身体」は、既存の知覚様式の解体と再編成に関わるものであり、単なる身体的快楽の追求とは異なります。"
+                }, {
+                    "text": "既存の知覚様式を解体し再編成するような、超越的な空間への錯覚体験", "isCorrect": true, "rationale": "本文では、バロックの天井画などが誘発する、既存の知覚様式を解体し再編成するような体験が「器官なき身体」に似ていると述べられています。"
+                }, {
+                    "text": "論理的思考によって空間を完全に把握する体験", "isCorrect": false, "rationale": "「器官なき身体」に関連する体験は、論理的把握よりも、知覚の変容や錯覚といった側面が強調されます。"
+                }, {
+                    "text": "身体感覚を完全に排除し、純粋な精神的活動に没入する体験", "isCorrect": false, "rationale": "「器官なき身体」は感覚の排除ではなく、その再編成や新たな様態を指し示す概念です。"
+                }],
+                "hint": "バロックの天井画などが見る人に与える、日常的な感覚とは異なる体験を思い出してください。"
+            }]
+        };
+
+        const quizQuestionTextElement = document.getElementById('quiz-question-text');
+        const quizAnswerOptionsElement = document.getElementById('quiz-answer-options');
+        const quizHintButton = document.getElementById('quiz-hint-button');
+        const quizHintArea = document.getElementById('quiz-hint-area');
+        const quizHintTextElement = document.getElementById('quiz-hint-text');
+        const quizRationaleArea = document.getElementById('quiz-rationale-area');
+        const quizRationaleTextElement = document.getElementById('quiz-rationale-text');
+        const quizNextButton = document.getElementById('quiz-next-button');
+        const quizResultsArea = document.getElementById('quiz-results-area');
+        const quizScoreTextElement = document.getElementById('quiz-score-text');
+        const quizRestartButton = document.getElementById('quiz-restart-button');
+        const quizQuestionArea = document.getElementById('quiz-question-area'); // クイズの問題表示エリア
+        const quizNavigationArea = document.getElementById('quiz-navigation-area'); // クイズのナビゲーションボタンエリア
+        const quizTitleElement = document.getElementById('quiz-title'); // クイズのタイトル
+        const quizProgressTextElement = document.getElementById('quiz-progress-text');
+
+
+        let quizCurrentQuestionIndex = 0;
+        let quizScore = 0;
+        let quizQuestions = [];
+
+        function shuffleQuizArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function startQuiz() {
+            quizQuestions = quizData.questions; // シャッフルしない場合
+            // shuffleQuizArray(quizQuestions); // シャッフルする場合
+            quizCurrentQuestionIndex = 0;
+            quizScore = 0;
+            quizResultsArea.classList.add('hidden');
+            quizQuestionArea.classList.remove('hidden');
+            quizNavigationArea.classList.remove('hidden');
+            quizTitleElement.classList.remove('hidden');
+            quizHintButton.classList.remove('hidden');
+            quizNextButton.classList.add('hidden');
+            loadQuizQuestion();
+        }
+
+        function loadQuizQuestion() {
+            if (quizCurrentQuestionIndex < quizQuestions.length) {
+                const currentQuestion = quizQuestions[quizCurrentQuestionIndex];
+                quizQuestionTextElement.textContent = currentQuestion.question;
+                quizAnswerOptionsElement.innerHTML = '';
+                
+                const shuffledAnswerOptions = [...currentQuestion.answerOptions];
+                shuffleQuizArray(shuffledAnswerOptions);
+
+                shuffledAnswerOptions.forEach(option => {
+                    const button = document.createElement('button');
+                    button.textContent = option.text;
+                    button.classList.add('quiz-answer-btn', 'w-full', 'bg-slate-700', 'hover:bg-slate-600', 'text-slate-100', 'font-medium', 'py-3', 'px-4', 'rounded-lg', 'transition-all', 'duration-150', 'ease-in-out', 'text-left', 'border-2', 'border-slate-600');
+                    button.onclick = () => selectQuizAnswer(option, button, shuffledAnswerOptions);
+                    quizAnswerOptionsElement.appendChild(button);
+                });
+
+                quizHintTextElement.textContent = currentQuestion.hint;
+                quizHintArea.classList.add('hidden');
+                quizRationaleArea.classList.add('hidden');
+                quizRationaleTextElement.textContent = '';
+                quizNextButton.classList.add('hidden');
+                quizHintButton.disabled = false;
+                quizHintButton.textContent = 'ヒントを見る';
+                updateQuizProgress();
+            } else {
+                showQuizResults();
+            }
+        }
+
+        function selectQuizAnswer(selectedOption, selectedButton, allOptions) {
+            const isCorrect = selectedOption.isCorrect;
+            quizRationaleTextElement.textContent = selectedOption.rationale;
+            quizRationaleArea.classList.remove('hidden');
+
+            if (isCorrect) {
+                quizScore++;
+                selectedButton.classList.add('quiz-selected-correct');
+                quizRationaleTextElement.classList.add('quiz-rationale-correct');
+                quizRationaleTextElement.classList.remove('quiz-rationale-incorrect');
+            } else {
+                selectedButton.classList.add('quiz-selected-incorrect');
+                quizRationaleTextElement.classList.add('quiz-rationale-incorrect');
+                quizRationaleTextElement.classList.remove('quiz-rationale-correct');
+            }
+
+            Array.from(quizAnswerOptionsElement.children).forEach(button => {
+                button.disabled = true;
+                const optionText = button.textContent;
+                const originalOption = allOptions.find(opt => opt.text === optionText);
+                if (originalOption) {
+                    if (originalOption.isCorrect && button !== selectedButton) {
+                         button.classList.add('quiz-selected-correct'); // 正解を明示
+                    } else if (button !== selectedButton && !originalOption.isCorrect) {
+                        button.classList.add('opacity-60'); // 選ばれなかった不正解の選択肢
+                    }
+                }
+            });
+            
+            quizNextButton.classList.remove('hidden');
+            quizHintButton.disabled = true;
+        }
+
+        quizHintButton.addEventListener('click', () => {
+            quizHintArea.classList.toggle('hidden');
+            quizHintButton.textContent = quizHintArea.classList.contains('hidden') ? 'ヒントを見る' : 'ヒントを隠す';
+        });
+
+        quizNextButton.addEventListener('click', () => {
+            quizCurrentQuestionIndex++;
+            loadQuizQuestion();
+        });
+
+        quizRestartButton.addEventListener('click', startQuiz);
+
+        function showQuizResults() {
+            quizQuestionArea.classList.add('hidden');
+            quizNavigationArea.classList.add('hidden');
+            // quizTitleElement.classList.add('hidden'); // タイトルは残しても良いかも
+            quizHintButton.classList.add('hidden');
+            quizHintArea.classList.add('hidden');
+            quizRationaleArea.classList.add('hidden');
+            quizProgressTextElement.classList.add('hidden');
+
+            quizResultsArea.classList.remove('hidden');
+            quizScoreTextElement.textContent = `あなたのスコア: ${quizScore} / ${quizQuestions.length}`;
+        }
+        
+        function updateQuizProgress() {
+            quizProgressTextElement.textContent = `問題 ${quizCurrentQuestionIndex + 1} / ${quizQuestions.length}`;
+            quizProgressTextElement.classList.remove('hidden');
+        }
+
+        // クイズ開始
+        startQuiz();
+
+    </script>
+</body>
+</html>
+
